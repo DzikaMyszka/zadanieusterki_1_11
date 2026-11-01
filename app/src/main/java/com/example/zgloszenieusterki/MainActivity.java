@@ -21,6 +21,7 @@ public class MainActivity extends AppCompatActivity {
     private CheckBox cbKontakt;
     private Button btnWyslij;
     private TextView tvPodsumowanie;
+    private Button btnWyczysc;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,6 +47,16 @@ public class MainActivity extends AppCompatActivity {
             if (validateForm()) {
                 pokazPotwierdzenie();
             }
+        });
+
+
+        btnWyczysc.setOnClickListener(v -> {
+            new AlertDialog.Builder(this)
+                    .setTitle("Wyczyścić formularz?")
+                    .setMessage("Czy na pewno chcesz wyczyścić wszystkie pola?")
+                    .setPositiveButton("Tak", (dialog, which) -> wyczyscForm())
+                    .setNegativeButton("Nie", null)
+                    .show();
         });
     }
 
@@ -102,6 +113,36 @@ public class MainActivity extends AppCompatActivity {
 
         Snackbar.make(findViewById(R.id.main), "Zgłoszenie wysłane", Snackbar.LENGTH_LONG)
                 .setAction("Cofnij", v -> tvPodsumowanie.setText(""))
+                .show();
+    }
+    private void wyczyscForm() {
+        final String staryName = etName.getText().toString();
+        final String staryOpis = etOpis.getText().toString();
+        final int staraKategoria = spKategoria.getSelectedItemPosition();
+        final int staryPriorytet = rgPriorytet.getCheckedRadioButtonId();
+        final boolean staryKontakt = cbKontakt.isChecked();
+        final String starePodsumowanie = tvPodsumowanie.getText().toString();
+
+        etName.setText("");
+        etName.setError(null);
+        etOpis.setText("");
+        etOpis.setError(null);
+        spKategoria.setSelection(0);
+        rgPriorytet.clearCheck();
+        cbKontakt.setChecked(false);
+        tvPodsumowanie.setText("");
+
+        Snackbar.make(findViewById(R.id.main), "Formularz wyczyszczony", Snackbar.LENGTH_LONG)
+                .setAction("Cofnij", v -> {
+                    etName.setText(staryName);
+                    etOpis.setText(staryOpis);
+                    spKategoria.setSelection(staraKategoria);
+                    if (staryPriorytet != -1) {
+                        rgPriorytet.check(staryPriorytet);
+                    }
+                    cbKontakt.setChecked(staryKontakt);
+                    tvPodsumowanie.setText(starePodsumowanie);
+                })
                 .show();
     }
 }
