@@ -1,24 +1,107 @@
 package com.example.zgloszenieusterki;
 
 import android.os.Bundle;
-
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.EditText;
+import android.widget.RadioGroup;
+import android.widget.Spinner;
+import android.widget.TextView;
+import android.widget.Toast;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowCompat;
-import androidx.core.view.WindowInsetsCompat;
+import com.google.android.material.snackbar.Snackbar;
 
 public class MainActivity extends AppCompatActivity {
+
+    private EditText etName, etOpis;
+    private Spinner spKategoria;
+    private RadioGroup rgPriorytet;
+    private CheckBox cbKontakt;
+    private Button btnWyslij;
+    private TextView tvPodsumowanie;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        WindowCompat.enableEdgeToEdge(getWindow());
         setContentView(R.layout.activity_main);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
+
+        etName = findViewById(R.id.etName);
+        etOpis = findViewById(R.id.etOpis);
+        spKategoria = findViewById(R.id.spKategoria);
+        rgPriorytet = findViewById(R.id.rgPriorytet);
+        cbKontakt = findViewById(R.id.cbKontakt);
+        btnWyslij = findViewById(R.id.btnWyslij);
+        tvPodsumowanie = findViewById(R.id.tvPodsumowanie);
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
+                this, R.array.kategorie, android.R.layout.simple_spinner_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spKategoria.setAdapter(adapter);
+
+        cbKontakt.setOnCheckedChangeListener((buttonView, isChecked) ->
+                btnWyslij.setEnabled(isChecked));
+
+        btnWyslij.setOnClickListener(v -> {
+            if (validateForm()) {
+                pokazPotwierdzenie();
+            }
         });
+    }
+
+    private boolean validateForm() {
+        String name = etName.getText().toString().trim();
+        if (name.isEmpty()) {
+            etName.setError("Podaj imię i nazwisko");
+            etName.requestFocus();
+            return false;
+        }
+
+        if (spKategoria.getSelectedItemPosition() == 0) {
+            Toast.makeText(this, "Wybierz kategorię", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        if (rgPriorytet.getCheckedRadioButtonId() == -1) {
+            Toast.makeText(this, "Wybierz priorytet", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        String opis = etOpis.getText().toString().trim();
+        if (opis.isEmpty()) {
+            etOpis.setError("Opisz usterkę");
+            etOpis.requestFocus();
+            return false;
+        }
+
+        return true;
+    }
+
+    private void pokazPotwierdzenie() {
+        new AlertDialog.Builder(this)
+                .setTitle("Wysłać zgłoszenie?")
+                .setMessage("Czy na pewno chcesz wysłać to zgłoszenie?")
+                .setPositiveButton("Tak", (dialog, which) -> wyslij())
+                .setNegativeButton("Nie", null)
+                .show();
+    }
+
+    private void wyslij() {
+        String name = etName.getText().toString().trim();
+        String kategoria = spKategoria.getSelectedItem().toString();
+        String priorytet = "brak";
+        int id = rgPriorytet.getCheckedRadioButtonId();
+        if (id == R.id.rbNiski) priorytet = "Niski";
+        else if (id == R.id.rbSredni) priorytet = "Średni";
+        else if (id == R.id.rbWysoki) priorytet = "Wysoki";
+
+        String opis = etOpis.getText().toString().trim();
+
+        String text = name + "\n" + kategoria + "\n" + priorytet + "\n" + opis;
+        tvPodsumowanie.setText(text);
+
+        Snackbar.make(findViewById(R.id.main), "Zgłoszenie wysłane", Snackbar.LENGTH_LONG)
+                .setAction("Cofnij", v -> tvPodsumowanie.setText(""))
+                .show();
     }
 }
