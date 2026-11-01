@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Zgłoszenie usterki</string>
+
+    <string-array name="kategorie">
+        <item>-- wybierz kategorię --</item>
+        <item>Sprzęt</item>
+        <item>Oprogramowanie</item>
+        <item>Sieć</item>
+        <item>Inne</item>
+    </string-array>
+</resources>
